@@ -1,1 +1,3 @@
 target/
+data/resources/ui/*.ui
+!data/resources/ui/shortcuts.ui

@@ -7,15 +7,20 @@
 //
 
 use crate::config::APP_ID;
+use crate::window::Window;
 use gtk::prelude::*;
 use gtk::{gio, glib, subclass::prelude::*};
 use tracing::debug;
 
 mod imp {
     use super::*;
+    use glib::WeakRef;
+    use std::cell::OnceCell;
 
     #[derive(Debug, Default)]
-    pub struct TemplateFiller;
+    pub struct TemplateFiller {
+        pub window: OnceCell<WeakRef<Window>>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for TemplateFiller {
@@ -30,6 +35,7 @@ mod imp {
         fn activate(&self) {
             debug!("GtkApplication<TemplateFiller>::activate()");
             self.parent_activate();
+            self.obj().present_main_window();
         }
 
         fn startup(&self) {
@@ -61,6 +67,16 @@ impl TemplateFiller {
             .activate(move |app: &Self, _, _| app.quit())
             .build();
         self.add_action_entries([action_quit]);
+    }
+
+    fn present_main_window(&self) {
+        let window = if let Some(window) = self.active_window() {
+            window
+        } else {
+            let window = Window::new(self);
+            window.upcast()
+        };
+        window.present()
     }
 }
 

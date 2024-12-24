@@ -8,11 +8,14 @@
 
 mod application;
 mod config;
+mod window;
 
-use gtk::{glib, prelude::*};
+use gtk::{gio, glib, prelude::*};
 
 fn main() -> glib::ExitCode {
     tracing_subscriber::fmt::init();
+
+    gio::resources_register_include!("resources.gresource").expect("Resources should be available");
 
     glib::set_application_name("TemplateFiller");
 
