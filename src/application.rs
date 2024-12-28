@@ -60,6 +60,8 @@ impl TemplateFiller {
     fn setup_accels(&self) {
         self.set_accels_for_action("app.quit", &["<Control>q"]);
         self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
+        self.set_accels_for_action("win.open-document", &["<primary>o"]);
+        self.set_accels_for_action("win.save-document", &["<primary>s"]);
     }
 
     fn setup_gactions(&self) {
