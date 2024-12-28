@@ -8,6 +8,7 @@
 
 mod application;
 mod config;
+mod document;
 mod window;
 
 use gtk::{gio, glib, prelude::*};

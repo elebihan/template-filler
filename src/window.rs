@@ -7,9 +7,11 @@
 //
 
 use crate::application::TemplateFiller;
+use crate::document::Document;
 use glib::clone;
 use gtk::{glib, prelude::*, subclass::prelude::*};
-use tracing::debug;
+use std::cell::RefCell;
+use tracing::{debug, error};
 
 mod imp {
     use super::*;
@@ -19,12 +21,14 @@ mod imp {
     pub struct Window {
         #[template_child]
         pub save_button: gtk::TemplateChild<gtk::Button>,
+        pub(crate) document: RefCell<Option<Document>>,
     }
 
     impl Default for Window {
         fn default() -> Self {
             Self {
                 save_button: gtk::TemplateChild::default(),
+                document: RefCell::new(None),
             }
         }
     }
@@ -102,8 +106,7 @@ impl Window {
                 if response == gtk::ResponseType::Accept {
                     if let Some(file) = dialog.file() {
                         debug!("Opening {:?}", file.path());
-                        win.imp().save_button.set_visible(true);
-                        win.action_set_enabled("win.save-document", true);
+                        win.open_document(file)
                     }
                 }
                 dialog.close();
@@ -136,5 +139,20 @@ impl Window {
             }
         ));
         dialog.show();
+    }
+
+    fn open_document(&self, file: gio::File) {
+        match file
+            .path()
+            .ok_or_else(|| "Invalid file".to_string())
+            .and_then(|p| Document::open(p).map_err(|e| e.to_string()))
+        {
+            Ok(document) => {
+                *self.imp().document.borrow_mut() = Some(document);
+                self.imp().save_button.set_visible(true);
+                self.action_set_enabled("win.save-document", true)
+            }
+            Err(error) => error!("open_document: {}", error),
+        }
     }
 }
