@@ -49,6 +49,10 @@ mod imp {
                 debug!("win.save-document");
                 win.show_save_dialog()
             });
+            klass.install_action("win.close-document", None, move |win, _, _| {
+                debug!("win.close-document");
+                win.close_document()
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -153,6 +157,14 @@ impl Window {
                 self.action_set_enabled("win.save-document", true)
             }
             Err(error) => error!("open_document: {}", error),
+        }
+    }
+
+    fn close_document(&self) {
+        if self.imp().document.borrow().is_some() {
+            *self.imp().document.borrow_mut() = None;
+            self.imp().save_button.set_visible(false);
+            self.action_set_enabled("win.save-document", false)
         }
     }
 }

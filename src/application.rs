@@ -62,6 +62,7 @@ impl TemplateFiller {
         self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
         self.set_accels_for_action("win.open-document", &["<primary>o"]);
         self.set_accels_for_action("win.save-document", &["<primary>s"]);
+        self.set_accels_for_action("win.close-document", &["<primary>w"]);
     }
 
     fn setup_gactions(&self) {

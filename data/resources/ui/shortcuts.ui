@@ -21,6 +21,12 @@
                 <property name="action-name">win.save-document</property>
               </object>
             </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="title" translatable="yes" context="shortcut window">Close document</property>
+                <property name="action-name">win.close-document</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
