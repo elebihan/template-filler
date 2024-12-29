@@ -152,6 +152,8 @@ impl Window {
             .and_then(|p| Document::open(p).map_err(|e| e.to_string()))
         {
             Ok(document) => {
+                let file_name = document.path().file_name().and_then(|n| n.to_str());
+                self.set_title(file_name);
                 *self.imp().document.borrow_mut() = Some(document);
                 self.imp().save_button.set_visible(true);
                 self.action_set_enabled("win.save-document", true)
@@ -162,6 +164,7 @@ impl Window {
 
     fn close_document(&self) {
         if self.imp().document.borrow().is_some() {
+            self.set_title(Some("template-filler"));
             *self.imp().document.borrow_mut() = None;
             self.imp().save_button.set_visible(false);
             self.action_set_enabled("win.save-document", false)
