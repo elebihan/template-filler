@@ -8,8 +8,10 @@
 
 use crate::application::TemplateFiller;
 use crate::document::Document;
+use crate::variable::Variable;
+use crate::widgets::{VariableRow, VariablesView};
 use glib::clone;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use std::cell::RefCell;
 use tracing::{debug, error};
 
@@ -22,6 +24,9 @@ mod imp {
         #[template_child]
         pub save_button: gtk::TemplateChild<gtk::Button>,
         pub(crate) document: RefCell<Option<Document>>,
+        #[template_child]
+        pub(crate) variables_view: gtk::TemplateChild<VariablesView>,
+        pub(crate) variables: RefCell<Option<gio::ListStore>>,
     }
 
     impl Default for Window {
@@ -29,6 +34,8 @@ mod imp {
             Self {
                 save_button: gtk::TemplateChild::default(),
                 document: RefCell::new(None),
+                variables_view: gtk::TemplateChild::default(),
+                variables: RefCell::new(None),
             }
         }
     }
@@ -63,6 +70,8 @@ mod imp {
     impl ObjectImpl for Window {
         fn constructed(&self) {
             self.parent_constructed();
+            self.obj().setup_variables();
+            self.obj().setup_factory();
             self.save_button.set_visible(false);
             self.obj().action_set_enabled("win.save-document", false);
         }
@@ -152,6 +161,7 @@ impl Window {
             .and_then(|p| Document::open(p).map_err(|e| e.to_string()))
         {
             Ok(document) => {
+                self.load_variables(&document);
                 let file_name = document.path().file_name().and_then(|n| n.to_str());
                 self.set_title(file_name);
                 *self.imp().document.borrow_mut() = Some(document);
@@ -164,10 +174,79 @@ impl Window {
 
     fn close_document(&self) {
         if self.imp().document.borrow().is_some() {
+            self.clear_variables();
             self.set_title(Some("template-filler"));
             *self.imp().document.borrow_mut() = None;
             self.imp().save_button.set_visible(false);
             self.action_set_enabled("win.save-document", false)
         }
+    }
+
+    fn load_variables(&self, document: &Document) {
+        let variables = self.imp().variables.borrow();
+        if let Some(list_store) = variables.as_ref() {
+            list_store.remove_all();
+            for variable in document.variables() {
+                let variable = Variable::new(variable, "");
+                list_store.append(&variable);
+            }
+        }
+    }
+
+    fn clear_variables(&self) {
+        if let Some(list_store) = self.imp().variables.borrow().as_ref() {
+            list_store.remove_all();
+        }
+    }
+
+    fn setup_variables(&self) {
+        let model = gio::ListStore::new::<Variable>();
+        self.imp().variables.replace(Some(model));
+        let selection_model = gtk::NoSelection::new(Some(self.variables()));
+        self.imp().variables_view.set_model(Some(&selection_model));
+    }
+
+    fn setup_factory(&self) {
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(move |_, list_item| {
+            let variable_row = VariableRow::new();
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("VariableRow must be a ListItem")
+                .set_child(Some(&variable_row));
+        });
+        factory.connect_bind(move |_, list_item| {
+            let variable = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be a ListItem")
+                .item()
+                .and_downcast::<Variable>()
+                .expect("The item must be a Variable");
+            let row = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be a ListItem")
+                .child()
+                .and_downcast::<VariableRow>()
+                .expect("The child must be a VariableRow");
+            row.bind(&variable);
+        });
+        factory.connect_unbind(move |_, list_item| {
+            let row = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .child()
+                .and_downcast::<VariableRow>()
+                .expect("The child must be a VariableRow");
+            row.unbind();
+        });
+        self.imp().variables_view.set_factory(Some(&factory));
+    }
+
+    fn variables(&self) -> gio::ListStore {
+        self.imp()
+            .variables
+            .borrow()
+            .clone()
+            .expect("A model for variables should be set")
     }
 }
