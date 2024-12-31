@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-use crate::config::APP_ID;
+use crate::config::{APP_ID, VERSION};
 use crate::window::Window;
 use gtk::prelude::*;
 use gtk::{gio, glib, subclass::prelude::*};
@@ -66,7 +66,10 @@ impl TemplateFiller {
         let action_quit = gio::ActionEntry::builder("quit")
             .activate(move |app: &Self, _, _| app.quit())
             .build();
-        self.add_action_entries([action_quit]);
+        let action_about = gio::ActionEntry::builder("about")
+            .activate(move |app: &Self, _, _| app.show_about_dialog())
+            .build();
+        self.add_action_entries([action_quit, action_about]);
     }
 
     fn present_main_window(&self) {
@@ -77,6 +80,25 @@ impl TemplateFiller {
             window.upcast()
         };
         window.present()
+    }
+
+    fn show_about_dialog(&self) {
+        let dialog = gtk::AboutDialog::builder()
+            .program_name("template-filler")
+            .comments("Render a Handlebars template with user input")
+            .version(VERSION)
+            .authors(["Eric Le Bihan <eric.le.bihan.dev@free.fr>"])
+            .copyright("© 2024 Eric Le Bihan")
+            .license_type(gtk::License::MitX11)
+            .logo_icon_name(APP_ID)
+            .transient_for(
+                &self
+                    .active_window()
+                    .expect("Application should have an active window"),
+            )
+            .modal(true)
+            .build();
+        dialog.show();
     }
 }
 
