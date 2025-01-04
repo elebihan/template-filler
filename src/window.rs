@@ -12,7 +12,7 @@ use crate::variable::Variable;
 use crate::widgets::{VariableRow, VariablesView};
 use glib::clone;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
-use std::cell::RefCell;
+use std::{cell::RefCell, collections::HashMap, path::Path};
 use tracing::{debug, error};
 
 mod imp {
@@ -140,15 +140,18 @@ impl Window {
             ("_Save", gtk::ResponseType::Accept),
         ]);
         dialog.connect_response(clone!(
-            #[weak(rename_to = _win)]
+            #[weak(rename_to = win)]
             self,
             move |dialog, response| {
+                dialog.close();
                 if response == gtk::ResponseType::Accept {
                     if let Some(file) = dialog.file() {
-                        debug!("Saving as {:?}", file.path());
+                        if let Some(path) = file.path() {
+                            debug!("Saving as {}", path.display());
+                            win.save_document(&path);
+                        }
                     }
                 }
-                dialog.close();
             }
         ));
         dialog.show();
@@ -196,6 +199,25 @@ impl Window {
     fn clear_variables(&self) {
         if let Some(list_store) = self.imp().variables.borrow().as_ref() {
             list_store.remove_all();
+        }
+    }
+
+    fn save_document(&self, path: &Path) {
+        if let Some(document) = self.imp().document.borrow().as_ref() {
+            if let Some(list_store) = self.imp().variables.borrow().as_ref() {
+                let data: HashMap<String, String> = list_store
+                    .iter()
+                    .filter_map(|item| {
+                        item.ok().and_then(|item: glib::Object| {
+                            item.downcast_ref::<Variable>()
+                                .map(|variable| (variable.name(), variable.value()))
+                        })
+                    })
+                    .collect();
+                if let Err(_err) = document.render_to_file(path, &data) {
+                    todo!()
+                }
+            }
         }
     }
 
