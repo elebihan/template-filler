@@ -1,0 +1,22 @@
+[package]
+name = "template-filler"
+version = "0.1.1"
+edition = "2021"
+authors = [ "eric.le.bihan.dev@free.fr" ]
+license = "MIT"
+homepage = "https://github.com/elebihan/template-filler"
+description = """Simple Gtk application to fill a Handlebars template"""
+
+[dependencies]
+gio = { version = "0.20.7", features = ["v2_80"] }
+gtk = { package = "gtk4", version = "0.9.5", features = ["blueprint", "v4_8"] }
+handlebars = "6.2.0"
+thiserror = "2.0.9"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+
+[build-dependencies]
+glib-build-tools = "0.20.0"
+
+[dev-dependencies]
+tempfile = "3.14.0"

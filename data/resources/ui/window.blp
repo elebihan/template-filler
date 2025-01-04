@@ -1,0 +1,43 @@
+//
+// This file is part of template-filler
+//
+// SPDX-FileCopyrightText: © 2024 Eric Le Bihan <eric.le.bihan.dev@free.fr>
+//
+// SPDX-License-Identifier: MIT
+//
+
+using Gtk 4.0;
+
+template $Window: Gtk.ApplicationWindow {
+  title: "template-filler";
+  default-height: 480;
+  default-width: 640;
+  titlebar: Gtk.HeaderBar {
+    [start]
+    Gtk.Button open_button {
+      icon-name: "folder-open-symbolic";
+      action-name: "win.open-document";
+      tooltip-text: _("Open template");
+    }
+    [end]
+    Gtk.Box {
+      spacing: 6;
+      Gtk.Button save_button {
+        icon-name: "document-save-symbolic";
+        action-name: "win.save-document";
+        tooltip-text: _("Render template");
+      }
+      Gtk.MenuButton {
+        icon-name: "open-menu-symbolic";
+        menu-model: main_menu;
+        tooltip-text: _("Menu");
+      }
+    }
+  };
+  child: $VariablesView variables_view {};
+}
+
+menu main_menu {
+  item(_("About template-filler"), "app.about")
+  item(_("Show shortcuts"), "win.show-help-overlay")
+}
