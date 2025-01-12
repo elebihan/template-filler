@@ -2,7 +2,8 @@
 <gresources>
   <gresource prefix="/com/elebihan/TemplateFiller/">
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">ui/shortcuts.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks">ui/variable_row.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/variable_name_cell.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/variable_value_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/variables_view.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
   </gresource>

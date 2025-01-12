@@ -6,8 +6,10 @@
 // SPDX-License-Identifier: MIT
 //
 
-mod variable_row;
+mod variable_name_cell;
+mod variable_value_cell;
 mod variables_view;
 
-pub use variable_row::VariableRow;
+pub use variable_name_cell::VariableNameCell;
+pub use variable_value_cell::VariableValueCell;
 pub use variables_view::VariablesView;

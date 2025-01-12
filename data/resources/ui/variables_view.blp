@@ -15,12 +15,19 @@ template $VariablesView : Gtk.Box {
     Gtk.Box {
       orientation: vertical;
       spacing: 12;
-      Gtk.ListView list_view {
+      Gtk.ColumnView column_view {
         hexpand: true;
         vexpand: true;
         single-click-activate: false;
+        Gtk.ColumnViewColumn column_name {
+          title: _("Name");
+          expand: true;
+        }
+        Gtk.ColumnViewColumn column_value {
+          title: _("Value");
+          expand: true;
+        }
       }
     }
   }
- 
 }

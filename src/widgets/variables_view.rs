@@ -15,7 +15,11 @@ mod imp {
     #[derive(Default)]
     pub struct VariablesView {
         #[template_child]
-        pub list_view: gtk::TemplateChild<gtk::ListView>,
+        pub column_view: gtk::TemplateChild<gtk::ColumnView>,
+        #[template_child]
+        pub column_name: gtk::TemplateChild<gtk::ColumnViewColumn>,
+        #[template_child]
+        pub column_value: gtk::TemplateChild<gtk::ColumnViewColumn>,
     }
 
     #[glib::object_subclass]
@@ -54,10 +58,20 @@ glib::wrapper! {
 
 impl VariablesView {
     pub fn set_model(&self, model: Option<&impl glib::object::IsA<gtk::SelectionModel>>) {
-        self.imp().list_view.set_model(model)
+        self.imp().column_view.set_model(model)
     }
 
-    pub fn set_factory(&self, factory: Option<&impl glib::object::IsA<gtk::ListItemFactory>>) {
-        self.imp().list_view.set_factory(factory)
+    pub fn set_name_column_factory(
+        &self,
+        factory: Option<&impl glib::object::IsA<gtk::ListItemFactory>>,
+    ) {
+        self.imp().column_name.set_factory(factory)
+    }
+
+    pub fn set_value_column_factory(
+        &self,
+        factory: Option<&impl glib::object::IsA<gtk::ListItemFactory>>,
+    ) {
+        self.imp().column_value.set_factory(factory)
     }
 }

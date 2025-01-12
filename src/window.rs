@@ -9,7 +9,7 @@
 use crate::application::TemplateFiller;
 use crate::document::Document;
 use crate::variable::Variable;
-use crate::widgets::{VariableRow, VariablesView};
+use crate::widgets::{VariableNameCell, VariableValueCell, VariablesView};
 use glib::clone;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use std::{cell::RefCell, collections::HashMap, path::Path};
@@ -71,7 +71,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             self.obj().setup_variables();
-            self.obj().setup_factory();
+            self.obj().setup_factories();
             self.save_button.set_visible(false);
             self.obj().action_set_enabled("win.save-document", false);
         }
@@ -228,14 +228,14 @@ impl Window {
         self.imp().variables_view.set_model(Some(&selection_model));
     }
 
-    fn setup_factory(&self) {
+    fn setup_factories(&self) {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(move |_, list_item| {
-            let variable_row = VariableRow::new();
+            let variable_cell = VariableNameCell::new();
             list_item
                 .downcast_ref::<gtk::ListItem>()
-                .expect("VariableRow must be a ListItem")
-                .set_child(Some(&variable_row));
+                .expect("VariableNameCell must be a ListItem")
+                .set_child(Some(&variable_cell));
         });
         factory.connect_bind(move |_, list_item| {
             let variable = list_item
@@ -244,24 +244,62 @@ impl Window {
                 .item()
                 .and_downcast::<Variable>()
                 .expect("The item must be a Variable");
-            let row = list_item
+            let cell = list_item
                 .downcast_ref::<gtk::ListItem>()
                 .expect("Needs to be a ListItem")
                 .child()
-                .and_downcast::<VariableRow>()
-                .expect("The child must be a VariableRow");
-            row.bind(&variable);
+                .and_downcast::<VariableNameCell>()
+                .expect("The child must be a VariableNameCell");
+            cell.bind(&variable);
         });
         factory.connect_unbind(move |_, list_item| {
-            let row = list_item
+            let cell = list_item
                 .downcast_ref::<gtk::ListItem>()
                 .expect("Needs to be ListItem")
                 .child()
-                .and_downcast::<VariableRow>()
-                .expect("The child must be a VariableRow");
-            row.unbind();
+                .and_downcast::<VariableNameCell>()
+                .expect("The child must be a VariableNameCell");
+            cell.unbind();
         });
-        self.imp().variables_view.set_factory(Some(&factory));
+        self.imp()
+            .variables_view
+            .set_name_column_factory(Some(&factory));
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(move |_, list_item| {
+            let variable_cell = VariableValueCell::new();
+            list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("VariableValueCell must be a ListItem")
+                .set_child(Some(&variable_cell));
+        });
+        factory.connect_bind(move |_, list_item| {
+            let variable = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be a ListItem")
+                .item()
+                .and_downcast::<Variable>()
+                .expect("The item must be a Variable");
+            let cell = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be a ListItem")
+                .child()
+                .and_downcast::<VariableValueCell>()
+                .expect("The child must be a VariableValueCell");
+            cell.bind(&variable);
+        });
+        factory.connect_unbind(move |_, list_item| {
+            let cell = list_item
+                .downcast_ref::<gtk::ListItem>()
+                .expect("Needs to be ListItem")
+                .child()
+                .and_downcast::<VariableValueCell>()
+                .expect("The child must be a VariableValueCell");
+            cell.unbind();
+        });
+        self.imp()
+            .variables_view
+            .set_value_column_factory(Some(&factory));
     }
 
     fn variables(&self) -> gio::ListStore {
