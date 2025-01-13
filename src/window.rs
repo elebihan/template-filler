@@ -157,7 +157,7 @@ impl Window {
         dialog.show();
     }
 
-    fn open_document(&self, file: gio::File) {
+    pub(crate) fn open_document(&self, file: gio::File) {
         match file
             .path()
             .ok_or_else(|| "Invalid file".to_string())
