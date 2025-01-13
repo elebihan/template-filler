@@ -42,6 +42,7 @@ mod imp {
             debug!("GtkApplication<TemplateFiller>::startup()");
             self.parent_startup();
             let app = self.obj();
+            gtk::Window::set_default_icon_name(APP_ID);
             app.setup_gactions();
             app.setup_accels();
         }
@@ -100,6 +101,7 @@ impl TemplateFiller {
     fn show_about_dialog(&self) {
         let dialog = gtk::AboutDialog::builder()
             .program_name("template-filler")
+            .logo_icon_name(APP_ID)
             .comments("Render a Handlebars template with user input")
             .version(VERSION)
             .authors(["Eric Le Bihan <eric.le.bihan.dev@free.fr>"])

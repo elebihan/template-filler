@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/com/elebihan/TemplateFiller/">
+    <file compressed="true" alias="icons/com.elebihan.TemplateFiller.svg">../icons/hicolor/scalable/apps/com.elebihan.TemplateFiller.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">ui/shortcuts.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/variable_name_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/variable_value_cell.ui</file>
