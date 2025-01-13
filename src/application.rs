@@ -35,7 +35,7 @@ mod imp {
         fn activate(&self) {
             debug!("GtkApplication<TemplateFiller>::activate()");
             self.parent_activate();
-            self.obj().present_main_window();
+            self.obj().present_main_window(None);
         }
 
         fn startup(&self) {
@@ -44,6 +44,12 @@ mod imp {
             let app = self.obj();
             app.setup_gactions();
             app.setup_accels();
+        }
+
+        fn open(&self, files: &[gio::File], _hint: &str) {
+            debug!("GtkApplication<TemplateFiller>::open()");
+            let file = files.first().cloned();
+            self.obj().present_main_window(file)
         }
     }
 
@@ -75,14 +81,20 @@ impl TemplateFiller {
         self.add_action_entries([action_quit, action_about]);
     }
 
-    fn present_main_window(&self) {
+    fn present_main_window(&self, file: Option<gio::File>) {
         let window = if let Some(window) = self.active_window() {
             window
         } else {
             let window = Window::new(self);
             window.upcast()
         };
-        window.present()
+        window.present();
+        if let Some(file) = file {
+            let window = window
+                .downcast_ref::<Window>()
+                .expect("Widget must be a Window");
+            window.open_document(file)
+        }
     }
 
     fn show_about_dialog(&self) {
@@ -109,6 +121,7 @@ impl Default for TemplateFiller {
     fn default() -> Self {
         glib::Object::builder()
             .property("application-id", APP_ID)
+            .property("flags", gio::ApplicationFlags::HANDLES_OPEN)
             .build()
     }
 }
