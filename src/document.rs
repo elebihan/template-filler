@@ -10,7 +10,7 @@ use handlebars::{
     template::{Parameter, TemplateElement},
     Handlebars, Path as JsonPath, PathSeg,
 };
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -56,7 +56,7 @@ impl Document {
         let template = handlebars
             .get_template(name)
             .expect("Template should have been registered");
-        let variables: Vec<String> = template
+        let variables: BTreeSet<String> = template
             .elements
             .iter()
             .filter_map(|e| {
@@ -83,7 +83,7 @@ impl Document {
             })
             .cloned()
             .collect();
-        Ok(variables)
+        Ok(Vec::from_iter(variables))
     }
     /// Return the path of the document.
     pub fn path(&self) -> &Path {
