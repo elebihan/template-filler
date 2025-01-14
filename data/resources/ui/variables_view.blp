@@ -22,10 +22,12 @@ template $VariablesView : Gtk.Box {
         Gtk.ColumnViewColumn column_name {
           title: _("Name");
           expand: true;
+          resizable: true;
         }
         Gtk.ColumnViewColumn column_value {
           title: _("Value");
           expand: true;
+          resizable: true;
         }
       }
     }
