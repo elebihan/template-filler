@@ -223,8 +223,14 @@ impl Window {
 
     fn setup_variables(&self) {
         let model = gio::ListStore::new::<Variable>();
+        let sorter = self
+            .imp()
+            .variables_view
+            .sorter()
+            .expect("VariablesView must have a Sorter");
+        let sorted_model = gtk::SortListModel::new(Some(model.clone()), Some(sorter));
         self.imp().variables.replace(Some(model));
-        let selection_model = gtk::NoSelection::new(Some(self.variables()));
+        let selection_model = gtk::NoSelection::new(Some(sorted_model));
         self.imp().variables_view.set_model(Some(&selection_model));
     }
 
@@ -300,13 +306,5 @@ impl Window {
         self.imp()
             .variables_view
             .set_value_column_factory(Some(&factory));
-    }
-
-    fn variables(&self) -> gio::ListStore {
-        self.imp()
-            .variables
-            .borrow()
-            .clone()
-            .expect("A model for variables should be set")
     }
 }

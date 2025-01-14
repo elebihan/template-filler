@@ -9,6 +9,8 @@ use gtk::{glib, subclass::prelude::*};
 
 mod imp {
     use super::*;
+    use crate::variable::Variable;
+    use glib::types::StaticType;
 
     #[derive(Debug, gtk::CompositeTemplate)]
     #[template(resource = "/com/elebihan/TemplateFiller/ui/variables_view.ui")]
@@ -40,6 +42,22 @@ mod imp {
     impl ObjectImpl for VariablesView {
         fn constructed(&self) {
             self.parent_constructed();
+            let expression = gtk::PropertyExpression::new(
+                Variable::static_type(),
+                gtk::Expression::NONE,
+                "name",
+            );
+            let sorter = gtk::StringSorter::builder().expression(expression).build();
+            self.column_name.set_sorter(Some(&sorter));
+            let expression = gtk::PropertyExpression::new(
+                Variable::static_type(),
+                gtk::Expression::NONE,
+                "value",
+            );
+            let sorter = gtk::StringSorter::builder().expression(expression).build();
+            self.column_value.set_sorter(Some(&sorter));
+            self.column_view
+                .sort_by_column(Some(&self.column_name), gtk::SortType::Ascending);
         }
 
         fn dispose(&self) {
@@ -73,5 +91,9 @@ impl VariablesView {
         factory: Option<&impl glib::object::IsA<gtk::ListItemFactory>>,
     ) {
         self.imp().column_value.set_factory(factory)
+    }
+
+    pub fn sorter(&self) -> Option<gtk::Sorter> {
+        self.imp().column_view.sorter()
     }
 }
