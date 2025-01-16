@@ -75,10 +75,6 @@ mod imp {
             self.save_button.set_visible(false);
             self.obj().action_set_enabled("win.save-document", false);
         }
-
-        fn dispose(&self) {
-            self.dispose_template();
-        }
     }
 
     impl WidgetImpl for Window {}
