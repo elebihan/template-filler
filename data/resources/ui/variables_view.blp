@@ -1,0 +1,35 @@
+//
+// This file is part of template-filler
+//
+// SPDX-FileCopyrightText: © 2024 Eric Le Bihan <eric.le.bihan.dev@free.fr>
+//
+// SPDX-License-Identifier: MIT
+//
+
+using Gtk 4.0;
+
+template $VariablesView : Gtk.Box {
+  orientation: vertical;
+  vexpand: true;
+  Gtk.ScrolledWindow {
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 12;
+      Gtk.ColumnView column_view {
+        hexpand: true;
+        vexpand: true;
+        single-click-activate: false;
+        Gtk.ColumnViewColumn column_name {
+          title: _("Name");
+          expand: true;
+          resizable: true;
+        }
+        Gtk.ColumnViewColumn column_value {
+          title: _("Value");
+          expand: true;
+          resizable: true;
+        }
+      }
+    }
+  }
+}
