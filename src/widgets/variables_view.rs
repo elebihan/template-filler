@@ -22,6 +22,10 @@ mod imp {
         pub column_name: gtk::TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
         pub column_value: gtk::TemplateChild<gtk::ColumnViewColumn>,
+        #[template_child]
+        pub search_bar: gtk::TemplateChild<gtk::SearchBar>,
+        #[template_child]
+        pub search_entry: gtk::TemplateChild<gtk::SearchEntry>,
     }
 
     #[glib::object_subclass]
@@ -95,5 +99,13 @@ impl VariablesView {
 
     pub fn sorter(&self) -> Option<gtk::Sorter> {
         self.imp().column_view.sorter()
+    }
+
+    pub fn search_bar(&self) -> gtk::SearchBar {
+        self.imp().search_bar.get()
+    }
+
+    pub fn search_entry(&self) -> gtk::SearchEntry {
+        self.imp().search_entry.get()
     }
 }

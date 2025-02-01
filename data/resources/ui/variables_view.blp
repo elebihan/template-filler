@@ -11,6 +11,11 @@ using Gtk 4.0;
 template $VariablesView : Gtk.Box {
   orientation: vertical;
   vexpand: true;
+  Gtk.SearchBar search_bar {
+    Gtk.SearchEntry search_entry {
+      hexpand: true;
+    }
+  }
   Gtk.ScrolledWindow {
     Gtk.Box {
       orientation: vertical;

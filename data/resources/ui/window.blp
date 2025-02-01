@@ -22,6 +22,10 @@ template $Window: Gtk.ApplicationWindow {
     [end]
     Gtk.Box {
       spacing: 6;
+      Gtk.ToggleButton search_button {
+        icon-name: "system-search-symbolic";
+        tooltip-text: _("Search variables");
+      }
       Gtk.Button save_button {
         icon-name: "document-save-symbolic";
         action-name: "win.save-document";

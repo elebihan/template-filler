@@ -23,6 +23,8 @@ mod imp {
     pub struct Window {
         #[template_child]
         pub save_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub search_button: gtk::TemplateChild<gtk::ToggleButton>,
         pub(crate) document: RefCell<Option<Document>>,
         #[template_child]
         pub(crate) variables_view: gtk::TemplateChild<VariablesView>,
@@ -33,6 +35,7 @@ mod imp {
         fn default() -> Self {
             Self {
                 save_button: gtk::TemplateChild::default(),
+                search_button: gtk::TemplateChild::default(),
                 document: RefCell::new(None),
                 variables_view: gtk::TemplateChild::default(),
                 variables: RefCell::new(None),
@@ -56,6 +59,10 @@ mod imp {
                 debug!("win.save-document");
                 win.show_save_dialog()
             });
+            klass.install_action("win.search-document", None, move |win, _, _| {
+                debug!("win.search-document");
+                win.show_search_bar(true)
+            });
             klass.install_action("win.close-document", None, move |win, _, _| {
                 debug!("win.close-document");
                 win.close_document()
@@ -72,8 +79,10 @@ mod imp {
             self.parent_constructed();
             self.obj().setup_variables();
             self.obj().setup_factories();
+            self.obj().setup_search();
             self.save_button.set_visible(false);
             self.obj().action_set_enabled("win.save-document", false);
+            self.obj().action_set_enabled("win.search-document", false);
         }
     }
 
@@ -153,6 +162,13 @@ impl Window {
         dialog.show();
     }
 
+    pub fn show_search_bar(&self, visible: bool) {
+        self.imp()
+            .variables_view
+            .search_bar()
+            .set_search_mode(visible);
+    }
+
     pub(crate) fn open_document(&self, file: gio::File) {
         match file
             .path()
@@ -165,7 +181,9 @@ impl Window {
                 self.set_title(file_name);
                 *self.imp().document.borrow_mut() = Some(document);
                 self.imp().save_button.set_visible(true);
-                self.action_set_enabled("win.save-document", true)
+                self.imp().search_button.set_visible(true);
+                self.action_set_enabled("win.save-document", true);
+                self.action_set_enabled("win.search-document", true);
             }
             Err(error) => error!("open_document: {}", error),
         }
@@ -177,7 +195,9 @@ impl Window {
             self.set_title(Some("template-filler"));
             *self.imp().document.borrow_mut() = None;
             self.imp().save_button.set_visible(false);
-            self.action_set_enabled("win.save-document", false)
+            self.imp().search_button.set_visible(false);
+            self.action_set_enabled("win.save-document", false);
+            self.action_set_enabled("win.search-document", false);
         }
     }
 
@@ -219,15 +239,34 @@ impl Window {
 
     fn setup_variables(&self) {
         let model = gio::ListStore::new::<Variable>();
+        let search_entry = self.imp().variables_view.search_entry();
+        let filter = gtk::CustomFilter::new(move |item| {
+            let text = search_entry.text().to_lowercase();
+            if text.is_empty() {
+                return true;
+            }
+            let variable = item
+                .downcast_ref::<Variable>()
+                .expect("Item must be a Variable");
+            variable.name().contains(&text)
+        });
+        let filter_model = gtk::FilterListModel::builder()
+            .model(&model)
+            .filter(&filter)
+            .build();
         let sorter = self
             .imp()
             .variables_view
             .sorter()
             .expect("VariablesView must have a Sorter");
-        let sorted_model = gtk::SortListModel::new(Some(model.clone()), Some(sorter));
+        let sorted_model = gtk::SortListModel::new(Some(filter_model), Some(sorter));
         self.imp().variables.replace(Some(model));
         let selection_model = gtk::NoSelection::new(Some(sorted_model));
         self.imp().variables_view.set_model(Some(&selection_model));
+        self.imp()
+            .variables_view
+            .search_entry()
+            .connect_changed(move |_| filter.changed(gtk::FilterChange::Different));
     }
 
     fn setup_factories(&self) {
@@ -302,5 +341,15 @@ impl Window {
         self.imp()
             .variables_view
             .set_value_column_factory(Some(&factory));
+    }
+
+    fn setup_search(&self) {
+        self.imp().search_button.connect_toggled(clone!(
+            #[weak(rename_to = this)]
+            self,
+            move |button| {
+                this.show_search_bar(button.is_active());
+            }
+        ));
     }
 }
