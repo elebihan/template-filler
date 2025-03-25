@@ -5,16 +5,17 @@
 //
 // SPDX-License-Identifier: MIT
 //
-use gtk::{glib, subclass::prelude::*};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 mod imp {
     use super::*;
     use crate::variable::Variable;
     use glib::types::StaticType;
+    use std::cell::Cell;
 
-    #[derive(Debug, gtk::CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/com/elebihan/TemplateFiller/ui/variables_view.ui")]
-    #[derive(Default)]
+    #[properties(wrapper_type = super::VariablesView)]
     pub struct VariablesView {
         #[template_child]
         pub column_view: gtk::TemplateChild<gtk::ColumnView>,
@@ -26,6 +27,8 @@ mod imp {
         pub search_bar: gtk::TemplateChild<gtk::SearchBar>,
         #[template_child]
         pub search_entry: gtk::TemplateChild<gtk::SearchEntry>,
+        #[property(get, set)]
+        search_mode_enabled: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -43,6 +46,7 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for VariablesView {
         fn constructed(&self) {
             self.parent_constructed();
@@ -107,5 +111,10 @@ impl VariablesView {
 
     pub fn search_entry(&self) -> gtk::SearchEntry {
         self.imp().search_entry.get()
+    }
+
+    pub fn toggle_search_bar(&self) {
+        let search_bar = self.imp().search_bar.get();
+        search_bar.set_search_mode(!search_bar.is_search_mode());
     }
 }

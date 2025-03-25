@@ -25,6 +25,7 @@ template $Window: Gtk.ApplicationWindow {
       Gtk.ToggleButton search_button {
         icon-name: "system-search-symbolic";
         tooltip-text: _("Search variables");
+        active: bind variables_view.search-mode-enabled bidirectional;
       }
       Gtk.Button save_button {
         icon-name: "document-save-symbolic";

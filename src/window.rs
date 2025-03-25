@@ -61,7 +61,7 @@ mod imp {
             });
             klass.install_action("win.search-document", None, move |win, _, _| {
                 debug!("win.search-document");
-                win.show_search_bar(true)
+                win.toggle_search_bar()
             });
             klass.install_action("win.close-document", None, move |win, _, _| {
                 debug!("win.close-document");
@@ -79,8 +79,8 @@ mod imp {
             self.parent_constructed();
             self.obj().setup_variables();
             self.obj().setup_factories();
-            self.obj().setup_search();
             self.save_button.set_visible(false);
+            self.search_button.set_visible(false);
             self.obj().action_set_enabled("win.save-document", false);
             self.obj().action_set_enabled("win.search-document", false);
         }
@@ -162,11 +162,8 @@ impl Window {
         dialog.show();
     }
 
-    pub fn show_search_bar(&self, visible: bool) {
-        self.imp()
-            .variables_view
-            .search_bar()
-            .set_search_mode(visible);
+    pub fn toggle_search_bar(&self) {
+        self.imp().variables_view.toggle_search_bar();
     }
 
     pub(crate) fn open_document(&self, file: gio::File) {
@@ -341,15 +338,5 @@ impl Window {
         self.imp()
             .variables_view
             .set_value_column_factory(Some(&factory));
-    }
-
-    fn setup_search(&self) {
-        self.imp().search_button.connect_toggled(clone!(
-            #[weak(rename_to = this)]
-            self,
-            move |button| {
-                this.show_search_bar(button.is_active());
-            }
-        ));
     }
 }

@@ -11,6 +11,7 @@ using Gtk 4.0;
 template $VariablesView : Gtk.Box {
   orientation: vertical;
   vexpand: true;
+  search-mode-enabled: bind search_bar.search-mode-enabled bidirectional;
   Gtk.SearchBar search_bar {
     Gtk.SearchEntry search_entry {
       hexpand: true;
